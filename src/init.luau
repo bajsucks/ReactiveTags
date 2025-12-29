@@ -60,9 +60,18 @@ end
 function ReactiveTags.init()
     if SUBMODULE_PATH then
         for _, Sub in SUBMODULE_PATH:GetChildren() do
-            local Relations = Sub.Tags
+            local Success, m = pcall(function()
+                local m = require(Sub)
+                return m
+            end)
+            if not Success then
+                warn("Could not load a submodule!", m)
+                continue
+            end
+            local Relations = m.Tags
             if not Relations then continue end
             for Tag, Func in Relations do
+                print("defining", Tag, Func)
                 ReactiveTags.Define(Tag, Func)
             end
         end
