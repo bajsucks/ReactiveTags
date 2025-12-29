@@ -38,7 +38,6 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local SUBMODULE_PATH = ReplicatedStorage:FindFirstChild("ReactiveSubmodules") -- <-- change this!
 
-local StarterGui = game:GetService("StarterGui")
 local ReactiveTags = {}
 local Initialized = false
 
@@ -69,7 +68,6 @@ function ReactiveTags.init()
         end
     end
     for _, v in CollectionService:GetTagged("Reactive") do
-        if v:IsDescendantOf(StarterGui) then continue end
         HandleTags(v)
     end
     for i, v in TagRegister do
