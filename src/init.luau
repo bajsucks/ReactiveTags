@@ -81,11 +81,11 @@ function ReactiveTags.init()
 end
 --[[
     Defines a new tag relation. Keep in mind that tags can only be defined BEFORE .init() or AUTOMATICALLY using the submodule folder.
-    You can also overwrite already existing jTail tags using this function.
+    You can also override already existing reactive tags using this function.
 ]]
 function ReactiveTags.Define(Tag:string, Func:(ins:Instance)->())
     if Initialized then
-        warn("Cannot add a jTail tag when jTail is already initialized!")
+        warn("Cannot add a reactive tag when ReactiveTags is already initialized!")
     end
     TagRegister[Tag] = Func
 end
