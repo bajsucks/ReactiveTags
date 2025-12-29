@@ -1,58 +1,46 @@
+--[[
+    Created and maintained by baj
+    Reactive Tags v2
+    https://github.com/bajsucks/ReactiveTags
+    https://github.com/bajsucks/ReactiveSubmodules
+    Submodules should be parented to SUBMODULE_PATH on line 38 (default is ReplicatedStorage/ReactiveSubmodules)
+    All submodules must have a module.Tags table with tag relations to automatically load. It looks like this:
+    module.Tags = {["Tag"] = module.Resolver}
+    module.Resolver will be given an instance to process as an argument.
+    
+
+
+    $$$$$$$\                                  $$\     $$\                      
+    $$  __$$\                                 $$ |    \__|                     
+    $$ |  $$ | $$$$$$\   $$$$$$\   $$$$$$$\ $$$$$$\   $$\ $$\    $$\  $$$$$$\  
+    $$$$$$$  |$$  __$$\  \____$$\ $$  _____|\_$$  _|  $$ |\$$\  $$  |$$  __$$\ 
+    $$  __$$< $$$$$$$$ | $$$$$$$ |$$ /        $$ |    $$ | \$$\$$  / $$$$$$$$ |
+    $$ |  $$ |$$   ____|$$  __$$ |$$ |        $$ |$$\ $$ |  \$$$  /  $$   ____|
+    $$ |  $$ |\$$$$$$$\ \$$$$$$$ |\$$$$$$$\   \$$$$  |$$ |   \$  /   \$$$$$$$\ 
+    \__|  \__| \_______| \_______| \_______|   \____/ \__|    \_/     \_______|
+                                                                               
+                                                                               
+    $$$$$$$$\                                                                  
+    \__$$  __|                                                                 
+       $$ | $$$$$$\   $$$$$$\   $$$$$$$\                                       
+       $$ | \____$$\ $$  __$$\ $$  _____|                                      
+       $$ | $$$$$$$ |$$ /  $$ |\$$$$$$\                                        
+       $$ |$$  __$$ |$$ |  $$ | \____$$\                                       
+       $$ |\$$$$$$$ |\$$$$$$$ |$$$$$$$  |                                      
+       \__| \_______| \____$$ |\_______/                                       
+                     $$\   $$ |                                                
+                     \$$$$$$  |                                                
+                      \______/                                                 
+]]
+
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local SUBMODULE_PATH = ReplicatedStorage:FindFirstChild("ReactiveSubmodules") -- <-- change this!
+
 local StarterGui = game:GetService("StarterGui")
 local ReactiveTags = {}
 local Initialized = false
-local CompoundRegister = {}
-local DefaultRegister = {}
-
---[[
-    Add a new compound
-    @param Property Property which will be affected 
-    @param Value Value that will be compounded. Note that the next time you call Compound() it will overwrite it.
-]]
-local function Compound(Obj:Instance, Tag:string, Property:string, Value:any)
-    CompoundRegister[Obj] = CompoundRegister[Obj] or {}
-	CompoundRegister[Obj][Tag] = CompoundRegister[Obj][Tag] or {}
-	CompoundRegister[Obj][Tag][Property] = Value
-end
-
---[[
-    Returns all compounded properties and their values of an object.
-]]
-local function GetCompoundValues(Obj)
-    local tags = CompoundRegister[Obj]
-    if not tags then return {} end
-    local Values = {}
-    local function add(prop, val)
-        if Values[prop] then
-            Values[prop] = Values[prop] + val
-        else
-            Values[prop] = val
-        end
-    end
-	for _, properties in tags do
-        for prop, val in properties do
-            add(prop, val)
-        end
-	end
-    return Values
-end
-
---[[
-    Clear 1 tag compound of 1 object
-]]
-local function ClearCompound(Obj:Instance, Tag:string)
-	local reg = CompoundRegister[Obj]
-	if not reg then return end
-	reg[Tag] = nil
-end
---[[
-    Completely erase an object from all registers
-]]
-local function Superclear(Obj:Instance)
-	CompoundRegister[Obj] = nil
-	DefaultRegister[Obj] = nil
-end
 
 local TagRegister = {}
 
@@ -68,9 +56,18 @@ local function HandleTags(obj:Instance)
 end
 
 --[[
-    boots up the tag resolver
+    Autodefines submodules and boots up the tag resolver
 ]]
 function ReactiveTags.init()
+    if SUBMODULE_PATH then
+        for _, Sub in SUBMODULE_PATH:GetChildren() do
+            local Relations = Sub.Tags
+            if not Relations then continue end
+            for Tag, Func in Relations do
+                ReactiveTags.Define(Tag, Func)
+            end
+        end
+    end
     for _, v in CollectionService:GetTagged("Reactive") do
         if v:IsDescendantOf(StarterGui) then continue end
         HandleTags(v)
@@ -83,7 +80,7 @@ function ReactiveTags.init()
     Initialized = true
 end
 --[[
-    Defines a new tag in jTail. Keep in mind that tags can only be defined BEFORE .init()
+    Defines a new tag relation. Keep in mind that tags can only be defined BEFORE .init() or AUTOMATICALLY using the submodule folder.
     You can also overwrite already existing jTail tags using this function.
 ]]
 function ReactiveTags.Define(Tag:string, Func:(ins:Instance)->())
