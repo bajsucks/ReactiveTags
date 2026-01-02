@@ -71,7 +71,6 @@ function ReactiveTags.init()
             local Relations = m.Tags
             if not Relations then continue end
             for Tag, Func in Relations do
-                print("defining", Tag, Func)
                 ReactiveTags.Define(Tag, Func)
             end
         end
